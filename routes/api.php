@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\TestController;
+use App\Http\Controllers\CustomerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,5 +18,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('users/{id}', 'TestController@getUserId');
-Route::get('users', 'TestController@getAllUsers');
+Route::get('users/{id}', 'CustomerController@getUserId');
+Route::get('users', 'CustomerController@getAllUsers');

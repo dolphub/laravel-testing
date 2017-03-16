@@ -10,20 +10,19 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Customer;
 
 
-class TestController extends BaseController
+class CustomerController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     public function getUserId($id, Request $request) {
         if (!is_numeric($id)) {
-            
+
         }
 
-        return response()->json($responseArray, 200);
+        return response()->json([ 'customers': []], 200);
     }
 
     public function getAllUsers(Request $request) {
-        // TODO: Return all users
         return response()->json([ 'users' => Customer::all() ], 200);
     }
 }
