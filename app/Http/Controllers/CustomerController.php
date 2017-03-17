@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -9,17 +8,18 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Customer;
 
-
 class CustomerController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public function getUserId($id, Request $request) {
-        if (!is_numeric($id)) {
-
+    public function getUserById($id, Request $request) {
+        if (!is_numeric($id) || $id <= 0) {
+            return response()->json([ "error" => "Not valid customer Id."], 422);
         }
-
-        return response()->json([ 'customers': []], 200);
+        if ( !$customer = Customer::find($id)) {
+            return response()->json([ "error" => "Customer not found."], 404);
+        }
+        return response()->json($customer, 200);
     }
 
     public function getAllUsers(Request $request) {

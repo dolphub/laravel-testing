@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        // Clear table first
+        DB::table('customers')->trunacate();
         for ($i = 0; $i < 10; $i++) {
             DB::table('customers')->insert([
                 'name' => str_random(10),

@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\CustomerController;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,5 +17,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('users/{id}', 'CustomerController@getUserId');
-Route::get('users', 'CustomerController@getAllUsers');
+Route::get('customers/{id}', 'CustomerController@getUserById');
+Route::get('customers', 'CustomerController@getAllUsers');
