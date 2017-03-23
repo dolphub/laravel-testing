@@ -15,7 +15,7 @@ class Customer extends Model
         return $this->hasMany(Ticket::class);
     }
 
-    public function hasUnpaidTicket() {
-        return $this->tickets()->unpaid()->first();
+    public function getActiveTicket() {
+        return $this->tickets()->unpaid();
     }
 }

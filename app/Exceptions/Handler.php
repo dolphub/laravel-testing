@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -44,14 +45,12 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        // if ($e instance of ApiException) {
-        //
-        // }
-        // if ($request->expectsJson()) {
-        //     if ($e instanceof ValidationException) {
-        //         return response()->json(['errors' => $e->getMessage()], 422);
-        //     }
-        // }
+        // HttpException is thrown when `abort($statusCode, $message) is called`
+        // Capture here
+        if ($e instanceof HttpException) {
+            return response()->json([ 'errors' => $e->getMessage()], $e->getStatusCode() ?: 422);
+        }
+
         return parent::render($request, $e);
     }
 

@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\TicketsController;
+use App\Http\Controllers\TicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,5 +23,5 @@ Route::get('customers/{id}', 'CustomerController@getUserById');
 Route::get('customers', 'CustomerController@getAllUsers');
 Route::get('customers/{id}/tickets', 'CustomerController@getAllTicketsByCustomerId');
 
-Route::get('tickets/{id}', 'TicketsController@getTicketById');
-Route::post('tickets', 'TicketsController@generateTicket');
+Route::get('tickets/{id}', 'TicketController@getBalance');
+Route::post('tickets', 'TicketController@generateTicket');

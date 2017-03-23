@@ -1,34 +1,44 @@
 <?php
 
-namespace App\Services
+namespace App\Services;
 
+use App\Services\PricingService;
 use App\Customer;
+use App\Ticket;
 
-class CustomerService {
+class TicketService {
 
-    public function create($request) {
-        $customer = Customer::firstOrCreate(['plate' => $request->get('plate')]);
+    public function __construct(PricingService $priceService) {
+        $this->priceService = $priceService;
+    }
 
-        // Don't issue tickets to customers who have outstanding balances
-        if ($unpaidTicket = $customer->hasUnpaidTicket()) { // Check for outstanding balances
-            return response()->json(['errors' => 'Outstanding ticket', 'ticket_number' => $unpaidTicket->id], 422);
-        }
-
-        if ($this->checkCapacity() >= config('app.garage_capacity')) {
-            // TODO: Insert into message queue for notification
-            return response()->json([ 'errors' => 'Garage is at capacity' ], 422);
-        }
-
+    public function create($plate_number) {
+        $customer = Customer::firstOrCreate(['plate' => $plate_number]);
         $ticket = Ticket::create(['customer_id' => $customer->id ]);
         $customer->checked_in = true;
         $customer->save();
+
         return [ 'ticket' => $ticket->id,
             'issue_timestamp' => $ticket->created_at,
             'plate' => $customer->plate
         ];
     }
 
-    private function checkCapacity() {
-        return Customer::where('checked_in', true)->count();
+    public function hasCapacity() {
+        return Customer::where('checked_in', true)->count() < config('app.garage_capacity');
+    }
+
+    public function hasUnpaidTicket($plate_number) {
+        if (!$customer = Customer::where('plate', $plate_number)->first()) {
+            return false;
+        }
+        return $customer->getActiveTicket();
+    }
+
+    public function getBalance($ticketId) {
+        if (!$ticket = Ticket::find($ticketId)) {
+            return null;
+        }
+        return $this->priceService->getHourlyBalance($ticket);
     }
 }

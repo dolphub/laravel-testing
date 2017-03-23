@@ -16,10 +16,7 @@ use Carbon\Carbon;
 $factory->define(App\Ticket::class, function (Faker\Generator $faker) {
     return [
         'customer_id' => $faker->numberBetween($min=1, $max=10),
-        'created_at' => Carbon::now()->subMinutes(rand(1, 120)),
-        'updated_at' => Carbon::now()->addMinutes(rand(1, 120))
+        'created_at' => Carbon::now()->subMinutes(rand(1, 200)),
+        'updated_at' => Carbon::now()->addMinutes(rand(1, 200))
     ];
-
-    // 'arrived_at' => Carbon::now()->subMinutes(rand(1, 120)),
-    // 'departed_at' => Carbon::now()->addMinutes(rand(1, 120)),
 });
