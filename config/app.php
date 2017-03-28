@@ -14,6 +14,8 @@ return [
 
     'name' => 'Laravel',
 
+    'garage_capacity' => env('APP_GARAGE_CAPACITY', 5),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

@@ -11,12 +11,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        for ($i = 0; $i < 10; $i++) {
-            DB::table('customers')->insert([
-                'name' => str_random(10),
-                'email' => str_random(10).'@gmail.com',
-                'password' => bcrypt('secret'),
-            ]);
-        }
+        $this->call(CustomersTableSeed::class);
+        $this->command->info('Customer table seeded.');
+
+        $this->call(TicketsTableSeed::class);
+        $this->command->info('Tickets table seeded.');
     }
 }
