@@ -8,7 +8,6 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Services\TicketService;
-
 use App\Customer;
 use App\Ticket;
 
@@ -21,26 +20,35 @@ class TicketController extends Controller
     }
 
     public function generateTicket(Request $request) {
-        $this->validate($request, [ 'plate' => 'required' ]);
+        $messages = [
+            'plate.required' => 'Please provide a plate number',
+            'plate.plate_no_outstanding_tickets' => 'You have an outstanding ticket',
+        ];
+        $rules = [
+            'plate' => [ 'required|plate_no_outstanding_tickets' ],
+        ];
+        $this->validate($request, $rules, $messages);
         $plate = $request->get('plate');
 
-        if ($this->service->hasUnpaidTicket($plate)) {
-            return response()->json([ 'errors' => 'Outstanding Ticket' ], 422);
-        }
-
         if (!$this->service->hasCapacity()) {
-            // TODO: Insert into message queue for notification
-            return response()->json([ 'errors' => 'Garage is at capacity'], 422);
+            // TODO: Update message to show queue number when implemented
+            $queueNumber = $this->service->insertCustomerIntoQueue($plate);
+            return response()->json([ 'errors' =>
+                "Garage Currently Full. Your Position in Queue is {$queueNumber}."], 422);
         }
 
         $ticket = $this->service->create($plate);
         return response()->json($ticket, 200);
     }
 
-    public function getBalance($ticketId, Request $request) {
-        if (!$balance = $this->service->getBalance($ticketId)) {
-            return response()->json(['errors' => 'Ticket not found'], 422);
-        }
-        return response()->json([ 'balance' => $balance], 200);
+    public function getBalance(Ticket $ticket, Request $request) {
+        $balance = $this->service->getTicketBalance($ticket);
+        return response()->json([ 'balance' => $balance ], 200);
+    }
+
+    public function payTicket(Ticket $ticket, Request $request) {
+        // if ($this->service->)
+        // $this->service->payTicket($ticketId);
+        return response()->json($ticket->created_at, 422);
     }
 }

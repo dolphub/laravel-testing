@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
 {
-    protected $table = 'tickets';
+    protected $table = 'ticket';
     protected $fillable = ['customer_id'];
 
     public function customer() {
@@ -15,6 +15,6 @@ class Ticket extends Model
 
     // Naming conventions mean shit
     public function scopeUnpaid($query) {
-        return $query->where('paid', false);
+        return $query->first('paid', false)->exists();
     }
 }

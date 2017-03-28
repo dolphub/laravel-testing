@@ -20,7 +20,7 @@ class TicketService {
 
         return [ 'ticket' => $ticket->id,
             'issue_timestamp' => $ticket->created_at,
-            'plate' => $customer->plate
+            'plate' => $customer->plate,
         ];
     }
 
@@ -28,17 +28,30 @@ class TicketService {
         return Customer::where('checked_in', true)->count() < config('app.garage_capacity');
     }
 
-    public function hasUnpaidTicket($plate_number) {
+    /**
+     * @param {String} - Customer Plate Number
+     */
+    public function getUnpaidTicket($plate_number) {
         if (!$customer = Customer::where('plate', $plate_number)->first()) {
             return false;
         }
-        return $customer->getActiveTicket();
+        return $customer->getTicket();
     }
 
-    public function getBalance($ticketId) {
-        if (!$ticket = Ticket::find($ticketId)) {
-            return null;
-        }
-        return $this->priceService->getHourlyBalance($ticket);
+    public function getTicketBalance($ticket) {
+        return $this->priceService->getBalance($ticket);
+    }
+
+    public function payTicket($ticket) {
+        $balance = $this->priceService->getBalance($ticket);
+        // Assume some kind of transaction here
+        $ticket->paid = true;
+        $ticket->save();
+        return $ticket->id;
+    }
+
+    public function insertCustomerIntoQueue($plate_number) {
+        // TODO: Not yet implemented
+        return 1;
     }
 }

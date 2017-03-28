@@ -13,7 +13,7 @@ class CreateTicketsTable extends Migration
      */
     public function up()
     {
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('ticket', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('customer_id')->unsigned()->onDelete('cascade');
             $table->boolean('paid')->default(false);
@@ -21,8 +21,8 @@ class CreateTicketsTable extends Migration
 
         });
 
-        Schema::table('tickets', function(Blueprint $table) {
-           $table->foreign('customer_id')->references('id')->on('customers');
+        Schema::table('ticket', function(Blueprint $table) {
+           $table->foreign('customer_id')->references('id')->on('customer');
        });
     }
 
@@ -33,6 +33,6 @@ class CreateTicketsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('ticket');
     }
 }
