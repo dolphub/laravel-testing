@@ -2,14 +2,19 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Redis;
 use App\Services\PricingService;
 use App\Customer;
 use App\Ticket;
 
 class TicketService {
 
-    public function __construct(PricingService $priceService) {
+    public static $QUEUE_KEY = 'parking_queue';
+    public static $SET_KEY = 'parking_set';
+
+    public function __construct(PricingService $priceService, Redis $redis) {
         $this->priceService = $priceService;
+        $this->redis = $redis;
     }
 
     public function create($plate_number) {
@@ -51,7 +56,22 @@ class TicketService {
     }
 
     public function insertCustomerIntoQueue($plate_number) {
-        // TODO: Not yet implemented
-        return 1;
+        if (Redis::sismember(self::$SET_KEY, $plate_number)) {
+            return -1;
+        }
+        Redis::multi();
+        Redis::lpush(self::$QUEUE_KEY, $plate_number);
+        Redis::sadd(self::$SET_KEY, $plate_number);
+        Redis::exec();
+        return Redis::llen(self::$QUEUE_KEY);
+    }
+
+    public function getNextCarInQueue() {
+        if (!Redis::llen(self::$QUEUE_KEY)) {
+            return -1;
+        }
+        $plate = Redis::rpop(self::$QUEUE_KEY);
+        Redis::srem(self::$SET_KEY, $plate);
+        return $plate;
     }
 }

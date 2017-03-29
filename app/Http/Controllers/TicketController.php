@@ -25,7 +25,7 @@ class TicketController extends Controller
             'plate.plate_no_outstanding_tickets' => 'You have an outstanding ticket',
         ];
         $rules = [
-            'plate' => [ 'required|plate_no_outstanding_tickets' ],
+            'plate' => 'required|plate_no_outstanding_tickets',
         ];
         $this->validate($request, $rules, $messages);
         $plate = $request->get('plate');
@@ -33,6 +33,7 @@ class TicketController extends Controller
         if (!$this->service->hasCapacity()) {
             // TODO: Update message to show queue number when implemented
             $queueNumber = $this->service->insertCustomerIntoQueue($plate);
+
             return response()->json([ 'errors' =>
                 "Garage Currently Full. Your Position in Queue is {$queueNumber}."], 422);
         }
@@ -50,5 +51,9 @@ class TicketController extends Controller
         // if ($this->service->)
         // $this->service->payTicket($ticketId);
         return response()->json($ticket->created_at, 422);
+    }
+
+    public function testEndpoint(Request $request) {
+        return response()->json($this->service->getNextCarInQueue());
     }
 }
