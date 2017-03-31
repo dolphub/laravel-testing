@@ -15,6 +15,6 @@ class TicketValidator
         if (!$customer = Customer::where('plate', $value)->first()) {
             return true;
         }
-        return !$customer->tickets->where('paid', 0)->first()->exists();
+        return $customer->tickets->where('paid', 0)->count() == 0;
     }
 }

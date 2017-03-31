@@ -11,13 +11,13 @@ class Customer extends Model
     // Allows assignments
     protected $fillable = ['plate'];
 
-    protected $visible = ['plate', 'visits'];
+    protected $visible = ['plate', 'visits', 'checked_in'];
 
     public function tickets() {
         return $this->hasMany(Ticket::class);
     }
 
-    public function getTicket() {
-        return $this->tickets()->unpaid();
+    public function scopeUnpaidTickets($query) {
+        return $this->tickets->where('paid', 0);
     }
 }

@@ -15,6 +15,6 @@ class Ticket extends Model
 
     // Naming conventions mean shit
     public function scopeUnpaid($query) {
-        return $query->first('paid', false)->exists();
+        return $query->where('paid', 0);
     }
 }

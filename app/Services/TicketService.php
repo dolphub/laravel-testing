@@ -2,20 +2,26 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Redis;
 use App\Services\PricingService;
 use App\Customer;
 use App\Ticket;
 
 class TicketService {
 
-    public function __construct(PricingService $priceService) {
+    public static $QUEUE_KEY = 'parking_queue';
+    public static $SET_KEY = 'parking_set';
+
+    public function __construct(PricingService $priceService, Redis $redis) {
         $this->priceService = $priceService;
+        $this->redis = $redis;
     }
 
     public function create($plate_number) {
         $customer = Customer::firstOrCreate(['plate' => $plate_number]);
         $ticket = Ticket::create(['customer_id' => $customer->id ]);
         $customer->checked_in = true;
+        $customer->visits++;
         $customer->save();
 
         return [ 'ticket' => $ticket->id,
@@ -46,12 +52,29 @@ class TicketService {
         $balance = $this->priceService->getBalance($ticket);
         // Assume some kind of transaction here
         $ticket->paid = true;
-        $ticket->save();
+        $ticket->customer->checked_in = false;
+        $ticket->customer->save();
+        $ticket->saveOrFail();
         return $ticket->id;
     }
 
     public function insertCustomerIntoQueue($plate_number) {
-        // TODO: Not yet implemented
-        return 1;
+        if (Redis::sismember(self::$SET_KEY, $plate_number)) {
+            return -1;
+        }
+        Redis::multi();
+        Redis::rpush(self::$QUEUE_KEY, $plate_number);
+        Redis::sadd(self::$SET_KEY, $plate_number);
+        Redis::exec();
+        return Redis::llen(self::$QUEUE_KEY);
+    }
+
+    public function getNextCarInQueue() {
+        if (!Redis::llen(self::$QUEUE_KEY)) {
+            return null;
+        }
+        $plate = Redis::lpop(self::$QUEUE_KEY);
+        Redis::srem(self::$SET_KEY, $plate);
+        return $plate;
     }
 }
