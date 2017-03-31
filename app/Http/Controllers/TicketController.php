@@ -7,6 +7,8 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+use App\Events\CustomerCheckedOutEvent;
 use App\Services\TicketService;
 use App\Customer;
 use App\Ticket;
@@ -31,11 +33,10 @@ class TicketController extends Controller
         $plate = $request->get('plate');
 
         if (!$this->service->hasCapacity()) {
-            // TODO: Update message to show queue number when implemented
             $queueNumber = $this->service->insertCustomerIntoQueue($plate);
-
-            return response()->json([ 'errors' =>
-                "Garage Currently Full. Your Position in Queue is {$queueNumber}."], 422);
+            return response()->json([
+                'errors' => "Garage Currently Full. Your Position in Queue is {$queueNumber}."
+            ], 422);
         }
 
         $ticket = $this->service->create($plate);
@@ -43,17 +44,21 @@ class TicketController extends Controller
     }
 
     public function getBalance(Ticket $ticket, Request $request) {
+        if ($ticket->paid == true)  {
+            return response()->json([ 'errors' => "Ticket already paid" ], 422);
+        }
         $balance = $this->service->getTicketBalance($ticket);
         return response()->json([ 'balance' => $balance ], 200);
     }
 
     public function payTicket(Ticket $ticket, Request $request) {
-        // if ($this->service->)
-        // $this->service->payTicket($ticketId);
-        return response()->json($ticket->created_at, 422);
-    }
+        if ($ticket->paid == true) {
+            return response()->json(['errors' => 'Ticket already paid'], 422);
+        }
+        $this->service->payTicket($ticket);
 
-    public function testEndpoint(Request $request) {
-        return response()->json($this->service->getNextCarInQueue());
+        event(new CustomerCheckedOutEvent($ticket->customer));
+
+        return response()->json($ticket, 200);
     }
 }

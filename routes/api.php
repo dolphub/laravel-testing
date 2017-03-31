@@ -19,11 +19,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('customers/{id}', 'CustomerController@getUserById');
+Route::get('customers/{customer}', 'CustomerController@getUserById');
 Route::get('customers', 'CustomerController@getAllUsers');
-Route::get('customers/{id}/tickets', 'CustomerController@getAllTicketsByCustomerId');
+Route::get('customers/{customer}/tickets', 'CustomerController@getAllTicketsByCustomerId');
 
 Route::post('tickets', 'TicketController@generateTicket');
-Route::get('tickets/next', 'TicketController@testEndpoint');
 Route::get('tickets/{ticket}', 'TicketController@getBalance');
 Route::post('tickets/{ticket}', 'TicketController@payTicket');

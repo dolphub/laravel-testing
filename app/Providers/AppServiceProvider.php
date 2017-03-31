@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Plate validation
         Validator::extend('plate_no_outstanding_tickets', 'App\Validators\TicketValidator@plateNoOutstandingTickets');
     }
 

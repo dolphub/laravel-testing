@@ -21,6 +21,7 @@ class TicketService {
         $customer = Customer::firstOrCreate(['plate' => $plate_number]);
         $ticket = Ticket::create(['customer_id' => $customer->id ]);
         $customer->checked_in = true;
+        $customer->visits++;
         $customer->save();
 
         return [ 'ticket' => $ticket->id,
@@ -51,7 +52,9 @@ class TicketService {
         $balance = $this->priceService->getBalance($ticket);
         // Assume some kind of transaction here
         $ticket->paid = true;
-        $ticket->save();
+        $ticket->customer->checked_in = false;
+        $ticket->customer->save();
+        $ticket->saveOrFail();
         return $ticket->id;
     }
 
@@ -60,7 +63,7 @@ class TicketService {
             return -1;
         }
         Redis::multi();
-        Redis::lpush(self::$QUEUE_KEY, $plate_number);
+        Redis::rpush(self::$QUEUE_KEY, $plate_number);
         Redis::sadd(self::$SET_KEY, $plate_number);
         Redis::exec();
         return Redis::llen(self::$QUEUE_KEY);
@@ -68,9 +71,9 @@ class TicketService {
 
     public function getNextCarInQueue() {
         if (!Redis::llen(self::$QUEUE_KEY)) {
-            return -1;
+            return null;
         }
-        $plate = Redis::rpop(self::$QUEUE_KEY);
+        $plate = Redis::lpop(self::$QUEUE_KEY);
         Redis::srem(self::$SET_KEY, $plate);
         return $plate;
     }
